@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+      <xs:element name="Configuration">
+            <xs:complexType>
+                  <xs:sequence>
+                        <xs:element name="Folder" minOccurs="1" maxOccurs="unbounded">
+                              <xs:complexType>
+                                    <xs:sequence>
+                                          <xs:element name="Source" minOccurs="1" maxOccurs="1">
+                                                <xs:complexType>
+                                                      <xs:sequence>
+                                                            <xs:element name="BackupArchive" minOccurs="1" maxOccurs="1">
+                                                                  <xs:complexType>
+                                                                        <xs:attribute name="enable" type="xs:boolean" use="required"></xs:attribute>
+                                                                        <xs:attribute name="filenamePrefix" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="storeRootFolder" type="xs:boolean" use="required"></xs:attribute>
+                                                                        <xs:attribute name="test" type="xs:boolean" use="required"></xs:attribute>
+                                                                  </xs:complexType>
+                                                            </xs:element>
+                                                            <xs:element name="SMB" minOccurs="1" maxOccurs="1">
+                                                                  <xs:complexType>
+                                                                        <xs:attribute name="username" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="password" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="serverName" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="ipAddress" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="port" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="clientName" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="shareName" type="xs:string" use="required"></xs:attribute>
+                                                                  </xs:complexType>
+                                                            </xs:element>
+                                                            <xs:element name="UNC" minOccurs="1" maxOccurs="1">
+                                                                  <xs:complexType>
+                                                                        <xs:attribute name="username" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="password" type="xs:string" use="required"></xs:attribute>
+                                                                  </xs:complexType>
+                                                            </xs:element>
+                                                      </xs:sequence>
+                                                      <xs:attribute name="connectionMethod" type="xs:string" use="required"></xs:attribute>
+                                                      <xs:attribute name="path" type="xs:string" use="required"></xs:attribute>
+                                                      <xs:attribute name="pathFilter" type="xs:string" use="required"></xs:attribute>
+                                                      <xs:attribute name="fileFilter" type="xs:string" use="required"></xs:attribute>
+                                                </xs:complexType>
+                                          </xs:element>
+                                          <xs:element name="Destination" minOccurs="1" maxOccurs="1">
+                                                <xs:complexType>
+                                                      <xs:sequence>
+                                                            <xs:element name="BackupArchive" minOccurs="1" maxOccurs="1">
+                                                                  <xs:complexType>
+                                                                        <xs:attribute name="enable" type="xs:boolean" use="required"></xs:attribute>
+                                                                        <xs:attribute name="filenamePrefix" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="storeRootFolder" type="xs:boolean" use="required"></xs:attribute>
+                                                                        <xs:attribute name="test" type="xs:boolean" use="required"></xs:attribute>
+                                                                  </xs:complexType>
+                                                            </xs:element>
+                                                            <xs:element name="SMB" minOccurs="1" maxOccurs="1">
+                                                                  <xs:complexType>
+                                                                        <xs:attribute name="username" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="password" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="serverName" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="ipAddress" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="port" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="clientName" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="shareName" type="xs:string" use="required"></xs:attribute>
+                                                                  </xs:complexType>
+                                                            </xs:element>
+                                                            <xs:element name="UNC" minOccurs="1" maxOccurs="1">
+                                                                  <xs:complexType>
+                                                                        <xs:attribute name="username" type="xs:string" use="required"></xs:attribute>
+                                                                        <xs:attribute name="password" type="xs:string" use="required"></xs:attribute>
+                                                                  </xs:complexType>
+                                                            </xs:element>
+                                                      </xs:sequence>
+                                                      <xs:attribute name="connectionMethod" type="xs:string" use="required"></xs:attribute>
+                                                      <xs:attribute name="path" type="xs:string" use="required"></xs:attribute>
+                                                      <xs:attribute name="pathFilter" type="xs:string" use="required"></xs:attribute>
+                                                      <xs:attribute name="fileFilter" type="xs:string" use="required"></xs:attribute>
+                                                </xs:complexType>
+                                          </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="cmd" type="xs:string" use="required"></xs:attribute>
+                                    <xs:attribute name="cmd_long" type="xs:string" use="required"></xs:attribute>
+                                    <xs:attribute name="desc" type="xs:string" use="required"></xs:attribute>
+                                    <xs:attribute name="maxRetries" type="xs:int" use="required"></xs:attribute>
+                                    <xs:attribute name="retryInterval" type="xs:int" use="required"></xs:attribute>
+                                    <xs:attribute name="operation" type="xs:string" use="required"></xs:attribute>
+                                    <xs:attribute name="doHashCheck" type="xs:boolean" use="required"></xs:attribute>
+                                    <xs:attribute name="nAllowedEXEInstances" type="xs:int" use="required"></xs:attribute>
+                              </xs:complexType>
+                        </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="loggingMode" type="xs:string" use="required"></xs:attribute>
+                  <xs:attribute name="logFilePath" type="xs:string" use="required"></xs:attribute>
+            </xs:complexType>
+      </xs:element>
+</xs:schema>
