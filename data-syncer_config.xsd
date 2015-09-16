@@ -85,6 +85,7 @@
                                     <xs:attribute name="operation" type="xs:string" use="required"></xs:attribute>
                                     <xs:attribute name="doHashCheck" type="xs:boolean" use="required"></xs:attribute>
                                     <xs:attribute name="nAllowedEXEInstances" type="xs:int" use="required"></xs:attribute>
+                                    <xs:attribute name="nsPrecision" type="xs:boolean" use="required"></xs:attribute>
                               </xs:complexType>
                         </xs:element>
                   </xs:sequence>

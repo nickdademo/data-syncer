@@ -114,11 +114,11 @@ def remove_readonly(func, path, excinfo):
 #                                 WRAPPER FUNCTIONS                                   #
 #######################################################################################
 
-def _getDict(conn, pathFilter, fileFilter):
+def _getDict(conn, pathFilter, fileFilter, nsPrecision):
     connMethod = conn.xpath('@connectionMethod')[0]
     path = os.path.expandvars(conn.xpath('@path')[0])
     if connMethod == CONN_METHOD_STR_LOCAL:
-        return getDict_Local(path, pathFilter, fileFilter)
+        return getDict_Local(path, pathFilter, fileFilter, nsPrecision)
     elif connMethod == CONN_METHOD_STR_UNC:
         # Use credentials if provided
         username = conn.xpath('UNC/@username')[0]
@@ -130,7 +130,7 @@ def _getDict(conn, pathFilter, fileFilter):
         # Connect
         with UncDirectoryConnection(UncDirectory(path, creds)) as conn:
             # Get dict
-            d = getDict_Local(path, pathFilter, fileFilter)
+            d = getDict_Local(path, pathFilter, fileFilter, nsPrecision)
         return d
     elif connMethod == CONN_METHOD_STR_SMB:
         # Connect to remote machine
@@ -149,7 +149,7 @@ def _getDict(conn, pathFilter, fileFilter):
         smbConn.close()
         return d
 
-def _doBackup(conn, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive):
+def _doBackup(conn, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive, nsPrecision):
     connMethod = conn.xpath('@connectionMethod')[0]
     path = os.path.expandvars(conn.xpath('@path')[0])
     if connMethod == CONN_METHOD_STR_LOCAL:
@@ -180,7 +180,7 @@ def _doBackup(conn, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBac
         # Do backup
         pathFilter = eval(conn.xpath('@pathFilter')[0])
         fileFilter = eval(conn.xpath('@fileFilter')[0])
-        doBackup_Remote(smbConn, shareName, path, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive, pathFilter, fileFilter)
+        doBackup_Remote(smbConn, shareName, path, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive, pathFilter, fileFilter, nsPrecision)
         # Disconnect
         smbConn.close()
 
@@ -217,14 +217,14 @@ def _doDelete(conn, left, right, backupArchiveFilenamePrefix):
         # Disconnect
         smbConn.close()
 
-def _copy(connSrc, connDst, diffListSrc, doHashCheck):
+def _copy(connSrc, connDst, diffListSrc, doHashCheck, nsPrecision):
     srcConnMethod = connSrc.xpath('@connectionMethod')[0]
     dstConnMethod = connDst.xpath('@connectionMethod')[0]
     srcPath = os.path.expandvars(connSrc.xpath('@path')[0])
     dstPath = os.path.expandvars(connDst.xpath('@path')[0])
     # LOCAL->LOCAL copy
     if srcConnMethod == CONN_METHOD_STR_LOCAL and dstConnMethod == CONN_METHOD_STR_LOCAL:
-        return copy_Local(diffListSrc, srcPath, dstPath, doHashCheck)
+        return copy_Local(diffListSrc, srcPath, dstPath, doHashCheck, nsPrecision)
     # LOCAL->UNC copy
     elif srcConnMethod == CONN_METHOD_STR_LOCAL and dstConnMethod == CONN_METHOD_STR_UNC:
         # Use credentials if provided
@@ -237,7 +237,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
         # Connect
         with UncDirectoryConnection(UncDirectory(dstPath, creds)) as conn:
             # Do copy
-            n = copy_Local(diffListSrc, srcPath, dstPath, doHashCheck)
+            n = copy_Local(diffListSrc, srcPath, dstPath, doHashCheck, nsPrecision)
         return n
     # UNC->LOCAL copy
     elif srcConnMethod == CONN_METHOD_STR_UNC and dstConnMethod == CONN_METHOD_STR_LOCAL:
@@ -251,7 +251,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
         # Connect
         with UncDirectoryConnection(UncDirectory(srcPath, creds)) as conn:
             # Do copy
-            n = copy_Local(diffListSrc, srcPath, dstPath, doHashCheck)
+            n = copy_Local(diffListSrc, srcPath, dstPath, doHashCheck, nsPrecision)
         return n
     # UNC->UNC copy
     elif srcConnMethod == CONN_METHOD_STR_UNC and dstConnMethod == CONN_METHOD_STR_UNC:
@@ -276,7 +276,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
             # Connect
             with UncDirectoryConnection(UncDirectory(dstPath, creds2)) as conn2:
                 # Do copy
-                n = copy_Local(diffListSrc, srcPath, dstPath, doHashCheck)
+                n = copy_Local(diffListSrc, srcPath, dstPath, doHashCheck, nsPrecision)
         return n
     # LOCAL->SMB copy
     elif srcConnMethod == CONN_METHOD_STR_LOCAL and dstConnMethod == CONN_METHOD_STR_SMB:
@@ -291,7 +291,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
         smbConn = SMBConnection(username, password, clientName, serverName, use_ntlm_v2 = True)
         ret = smbConn.connect(ipAddress, int(port));
         # Do copy (upload)
-        n = copyTo_Remote(smbConn, shareName, diffListSrc, dstPath, srcPath)
+        n = copyTo_Remote(smbConn, shareName, diffListSrc, dstPath, srcPath, nsPrecision)
         # Disconnect
         smbConn.close()
         return n
@@ -308,7 +308,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
         smbConn = SMBConnection(username, password, clientName, serverName, use_ntlm_v2 = True)
         ret = smbConn.connect(ipAddress, int(port));
         # Do copy (download)
-        n = copyFrom_Remote(smbConn, shareName, diffListSrc, srcPath, dstPath)
+        n = copyFrom_Remote(smbConn, shareName, diffListSrc, srcPath, dstPath, nsPrecision)
         # Disconnect
         smbConn.close()
         return n
@@ -334,7 +334,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
             smbConn = SMBConnection(username, password, clientName, serverName, use_ntlm_v2 = True)
             ret = smbConn.connect(ipAddress, int(port));
             # Do copy (upload)
-            n = copyTo_Remote(smbConn, shareName, diffListSrc, dstPath, srcPath)
+            n = copyTo_Remote(smbConn, shareName, diffListSrc, dstPath, srcPath, nsPrecision)
             # Disconnect
             smbConn.close()
         return n
@@ -360,7 +360,7 @@ def _copy(connSrc, connDst, diffListSrc, doHashCheck):
             smbConn = SMBConnection(username, password, clientName, serverName, use_ntlm_v2 = True)
             ret = smbConn.connect(ipAddress, int(port));
             # Do copy (download)
-            n = copyFrom_Remote(smbConn, shareName, diffListSrc, srcPath, dstPath)
+            n = copyFrom_Remote(smbConn, shareName, diffListSrc, srcPath, dstPath, nsPrecision)
             # Disconnect
             smbConn.close()
         return n
@@ -467,7 +467,7 @@ def getHash(file_name):
 #                                   LOCAL FUNCTIONS                                   #
 #######################################################################################
 
-def populateDict_Local(local, localPath, path, pathFilter, fileFilter):
+def populateDict_Local(local, localPath, path, pathFilter, fileFilter, nsPrecision):
     for filename in os.listdir(localPath + path):
         # Ignore files/folders starting with '.'
         if not filename.startswith('.'):
@@ -482,9 +482,14 @@ def populateDict_Local(local, localPath, path, pathFilter, fileFilter):
             filePath = localPath + path + filename
             # Create SharedFile object
             size = os.stat(filePath).st_size
-            last_write_time = os.stat(filePath).st_mtime_ns
-            last_access_time = os.stat(filePath).st_atime
-            create_time = os.stat(filePath).st_ctime
+            if nsPrecision:
+                last_write_time = os.stat(filePath).st_mtime_ns
+                last_access_time = os.stat(filePath).st_atime_ns
+                create_time = os.stat(filePath).st_ctime_ns
+            else:
+                last_write_time = int(os.stat(filePath).st_mtime)
+                last_access_time = int(os.stat(filePath).st_atime)
+                create_time = int(os.stat(filePath).st_ctime)
             # DIRECTORY
             if os.path.isdir(filePath):
                 # Create file object
@@ -494,7 +499,7 @@ def populateDict_Local(local, localPath, path, pathFilter, fileFilter):
                     # Add to dict
                     local[path].append(file)
                 # Enter directory
-                populateDict_Local(local, localPath, path + file.filename, pathFilter, fileFilter)
+                populateDict_Local(local, localPath, path + file.filename, pathFilter, fileFilter, nsPrecision)
             # FILE
             else:
                 # Check BOTH file and folder filters
@@ -504,9 +509,9 @@ def populateDict_Local(local, localPath, path, pathFilter, fileFilter):
                     # Add to dict
                     local[path].append(file)
                 
-def getDict_Local(localPath, pathFilter, fileFilter):
+def getDict_Local(localPath, pathFilter, fileFilter, nsPrecision):
     local = defaultdict(list)
-    populateDict_Local(local, localPath, '', pathFilter, fileFilter)
+    populateDict_Local(local, localPath, '', pathFilter, fileFilter, nsPrecision)
     return local
 
 def doBackup_Local(localPath, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive):
@@ -536,7 +541,7 @@ def doDelete_Local(left, right, localPath, backupArchiveFilenamePrefix):
                 else:
                     logger.warning('Local path does not exist (already deleted): %s' % (localPath + path + file.filename))
 
-def copy_Local(copyList, srcPath, dstPath, doHashCheck):
+def copy_Local(copyList, srcPath, dstPath, doHashCheck, nsPrecision):
     n = 0
     # Create DST directory structure first
     for (path, fileList) in copyList.items():
@@ -548,7 +553,10 @@ def copy_Local(copyList, srcPath, dstPath, doHashCheck):
             else:
                 logger.info("Local path already exists: %s"  % (dstPath + path + filename))
             # Set Last Modified and Last Accessed times to match SRC
-            os.utime(dstPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            if nsPrecision:
+                os.utime(dstPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            else:
+                os.utime(dstPath + path + filename, (file.last_access_time, file.last_write_time))
             n += 1
     # Copy file(s)
     for (path, fileList) in copyList.items():
@@ -567,7 +575,10 @@ def copy_Local(copyList, srcPath, dstPath, doHashCheck):
                     raise Exception("File hashes do not match: SRC(%s)=%s, DST(%s)=%s" % (srcPath + path + filename, srcFile_sha, dstPath + path + filename, dstFile_sha))
             logger.info("Local copy complete: %s -> %s" % ((srcPath + path + filename),(dstPath + path + filename)))
             # Set Last Modified and Last Accessed times to match remote machine
-            os.utime(dstPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            if nsPrecision:
+                os.utime(dstPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            else:
+                os.utime(dstPath + path + filename, (file.last_access_time, file.last_write_time))
             n += 1
     # Ensure attributes of DST folders match SRC folders
     # NOTE: This is required because adding a file into a folder changes its attributes
@@ -575,7 +586,10 @@ def copy_Local(copyList, srcPath, dstPath, doHashCheck):
         for file in (f for f in fileList if f.isDirectory):
             filename = file.filename
             # Set Last Modified and Last Accessed times to match SRC
-            os.utime(dstPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            if nsPrecision:
+                os.utime(dstPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            else:
+                os.utime(dstPath + path + filename, (file.last_access_time, file.last_write_time))
     return n
 
 #######################################################################################
@@ -614,14 +628,14 @@ def getDict_Remote(conn, shareName, remotePath, pathFilter, fileFilter):
     populateDict_Remote(conn, remote, shareName, remotePath, '', pathFilter, fileFilter)
     return remote
 
-def doBackup_Remote(conn, shareName, remotePath, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive, pathFilter, fileFilter):
+def doBackup_Remote(conn, shareName, remotePath, backupArchiveFilenamePrefix, timestamp, storeRootFolderInBackupArchive, testBackupArchive, pathFilter, fileFilter, nsPrecision):
     logger.info('Creating remote backup archive...')
     # Get remote contents
     remote = getDict_Remote(conn, shareName, remotePath, pathFilter, fileFilter)
     # Create temporary download directory on local
     with tempfile.TemporaryDirectory() as temp_dir:
         # Download all files in remote
-        copyFrom_Remote(conn, shareName, remote, remotePath, temp_dir + '/')
+        copyFrom_Remote(conn, shareName, remote, remotePath, temp_dir + '/', nsPrecision)
         # Create temporary local ZIP
         zipFilename =  backupArchiveFilenamePrefix + '-' + timestamp.strftime(TIMESTAMP_FORMAT_STR) + '.zip'
         zipFilePath = temp_dir + '/' + zipFilename
@@ -682,7 +696,7 @@ def createPath_Remote(conn, shareName, path):
         conn.createDirectory(shareName, path)
         logger.info('Directory created: %s'  % (shareName + path))
 
-def copyFrom_Remote(conn, shareName, downloadList, remotePath, localPath):
+def copyFrom_Remote(conn, shareName, downloadList, remotePath, localPath, nsPrecision):
     n = 0
     # Create local directory structure first
     for (path, fileList) in downloadList.items():
@@ -694,7 +708,10 @@ def copyFrom_Remote(conn, shareName, downloadList, remotePath, localPath):
             else:
                 logger.info("Path already exists: %s"  % (localPath + path + filename))
             # Set Last Modified and Last Accessed times to match remote machine
-            os.utime(localPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            if nsPrecision:
+                os.utime(localPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            else:
+                os.utime(localPath + path + filename, (file.last_access_time, file.last_write_time))
             n += 1
     # Download file(s)
     for (path, fileList) in downloadList.items():
@@ -706,7 +723,10 @@ def copyFrom_Remote(conn, shareName, downloadList, remotePath, localPath):
                 logger.info("Download complete [%d byte(s)]: %s" % (file_size, (localPath + path + filename)))
                 f.close()
             # Set Last Modified and Last Accessed times to match remote machine
-            os.utime(localPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            if nsPrecision:
+                os.utime(localPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            else:
+                os.utime(localPath + path + filename, (file.last_access_time, file.last_write_time))
             n += 1
     # Ensure attributes of local folders match remote
     # NOTE: This is required because downloading a file into a folder changes its attributes
@@ -714,10 +734,13 @@ def copyFrom_Remote(conn, shareName, downloadList, remotePath, localPath):
         for file in (f for f in fileList if f.isDirectory):
             filename = file.filename
             # Set Last Modified and Last Accessed times to match remote machine
-            os.utime(localPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            if nsPrecision:
+                os.utime(localPath + path + filename, None, ns=(file.last_access_time, file.last_write_time))
+            else:
+                os.utime(localPath + path + filename, (file.last_access_time, file.last_write_time))
     return n
 
-def copyTo_Remote(conn, shareName, uploadList, remotePath, localPath):
+def copyTo_Remote(conn, shareName, uploadList, remotePath, localPath, nsPrecision):
     n = 0
     # Create remote directory structure first
     for (path, fileList) in uploadList.items():
@@ -728,7 +751,10 @@ def copyTo_Remote(conn, shareName, uploadList, remotePath, localPath):
             # Get remote file attributes
             newFile = conn.getAttributes(shareName, remotePath + path + filename)
             # Set Last Modified and Last Accessed times in remote to match local machine
-            os.utime(localPath + path + filename, None, ns=(newFile.last_access_time, newFile.last_write_time))
+            if nsPrecision:
+                os.utime(localPath + path + filename, None, ns=(newFile.last_access_time, newFile.last_write_time))
+            else:
+                os.utime(localPath + path + filename, (newFile.last_access_time, newFile.last_write_time))
             n += 1
     # Upload file(s)
     for (path, fileList) in uploadList.items():
@@ -742,7 +768,10 @@ def copyTo_Remote(conn, shareName, uploadList, remotePath, localPath):
                 # Get remote file attributes
                 newFile = conn.getAttributes(shareName, remotePath + path + filename)
                 # Set Last Modified and Last Accessed times in remote to match local machine
-                os.utime(localPath + path + filename, None, ns=(newFile.last_access_time, newFile.last_write_time))
+                if nsPrecision:
+                    os.utime(localPath + path + filename, None, ns=(newFile.last_access_time, newFile.last_write_time))
+                else:
+                    os.utime(localPath + path + filename, (newFile.last_access_time, newFile.last_write_time))
                 n += 1
     # Ensure attributes of local folders match remote
     # NOTE: This is required because uploading a file into a folder changes its attributes
@@ -752,7 +781,10 @@ def copyTo_Remote(conn, shareName, uploadList, remotePath, localPath):
             # Get remote file attributes
             newFile = conn.getAttributes(shareName, remotePath + path + filename)
             # Set Last Modified and Last Accessed times in remote to match local machine
-            os.utime(localPath + path + filename, None, ns=(newFile.last_access_time, newFile.last_write_time))
+            if nsPrecision:
+                os.utime(localPath + path + filename, None, ns=(newFile.last_access_time, newFile.last_write_time))
+            else:
+                os.utime(localPath + path + filename, (newFile.last_access_time, newFile.last_write_time))
     return n
 
 #######################################################################################
@@ -925,6 +957,9 @@ if __name__ == "__main__":
         logger.error("EXE_INSTANCES_LIMIT_EXCEEDED: Number of %s instances running: %d (Allowed: %d)" % (EXE_FILENAME, procCount, nAllowedEXEInstances))
         logger.error('Program will now exit.')
         sys.exit(RETURN_EXIT__ERROR_EXE_INSTANCES_LIMIT_EXCEEDED)
+    # NS PRECISION
+    nsPrecision = (f.xpath('@nsPrecision')[0] == BOOLEAN_TRUE_STR)
+    logger.info('Nanosecond Precision = %s' % nsPrecision)   
     # Start operation
     firstRun = True
     nRetries = 0
@@ -1004,9 +1039,9 @@ if __name__ == "__main__":
             # Save timestamp
             timestamp = datetime.datetime.now()
             # Get remote contents
-            srcDict = _getDict(src, srcPathFilter, srcFileFilter)
+            srcDict = _getDict(src, srcPathFilter, srcFileFilter, nsPrecision)
             # Get local contents
-            dstDict = _getDict(dst, dstPathFilter, srcFileFilter)
+            dstDict = _getDict(dst, dstPathFilter, srcFileFilter, nsPrecision)
             # Do comparison
             logger.info('Diff: Left=SRC, Right=DST')
             diffListSrc, nDiffListSrc = doComparison(srcDict, dstDict)
@@ -1022,12 +1057,12 @@ if __name__ == "__main__":
                 if doBackupDst:
                     # We only create a DST backup if SRC has changes and DST is not empty
                     if ((nDiffListSrc > 0) and (len(dstDict) > 0)):
-                        _doBackup(dst, backupArchiveFilenamePrefixDst, timestamp, storeRootFolderInBackupArchiveDst, testBackupArchiveDst)
+                        _doBackup(dst, backupArchiveFilenamePrefixDst, timestamp, storeRootFolderInBackupArchiveDst, testBackupArchiveDst, nsPrecision)
                 # Do SRC backup
                 if doBackupSrc:
                     logger.warning("SRC backup is not applicable for COPY operation. SRC backup will not be performed.")
                 # Do copy
-                n = _copy(src, dst, diffListSrc, doHashCheck)
+                n = _copy(src, dst, diffListSrc, doHashCheck, nsPrecision)
                 logger.info("%s operation finished (%s): %d item(s)" % (operation, timestamp, n))
                 ret = RETURN_EXIT__SUCCESS
             ########
@@ -1038,14 +1073,14 @@ if __name__ == "__main__":
                 if doBackupDst:
                     # We only create a DST backup if SRC has changes and DST is not empty
                     if ((nDiffListSrc > 0) and (len(dstDict) > 0)):
-                        _doBackup(dst, backupArchiveFilenamePrefixDst, timestamp, storeRootFolderInBackupArchiveDst,testBackupArchiveDst)
+                        _doBackup(dst, backupArchiveFilenamePrefixDst, timestamp, storeRootFolderInBackupArchiveDst,testBackupArchiveDst, nsPrecision)
                 # Do SRC backup
                 if doBackupSrc:
                     # Do backup before deleting
                     if ((nDiffListDst > 0) or (nDiffListSrc > 0)) and (len(srcDict) > 0):
-                        _doBackup(src, backupArchiveFilenamePrefixSrc, timestamp, storeRootFolderInBackupArchiveSrc, testBackupArchiveSrc)
+                        _doBackup(src, backupArchiveFilenamePrefixSrc, timestamp, storeRootFolderInBackupArchiveSrc, testBackupArchiveSrc, nsPrecision)
                 # Do copy
-                n = _copy(src, dst, diffListSrc, doHashCheck)
+                n = _copy(src, dst, diffListSrc, doHashCheck, nsPrecision)
                 # Delete copied items from SRC
                 _doDelete(src, diffListSrc, defaultdict(list), backupArchiveFilenamePrefixSrc)
                 logger.info("%s operation finished (%s): %d item(s)" % (operation, timestamp, n))
@@ -1058,12 +1093,12 @@ if __name__ == "__main__":
                 if doBackupDst:
                     # We create a DST backup if SRC or DST has changes and DST is not empty
                     if ((nDiffListDst > 0) or (nDiffListSrc > 0)) and (len(dstDict) > 0):
-                        _doBackup(dst, backupArchiveFilenamePrefixDst, timestamp, storeRootFolderInBackupArchiveDst, testBackupArchiveDst)   
+                        _doBackup(dst, backupArchiveFilenamePrefixDst, timestamp, storeRootFolderInBackupArchiveDst, testBackupArchiveDst, nsPrecision)   
                 # Do SRC backup
                 if doBackupSrc:
                     logger.warning("SRC backup is not applicable for SYNC operation. SRC backup will not be performed.")
                 # Do copy
-                n = _copy(src, dst, diffListSrc, doHashCheck)
+                n = _copy(src, dst, diffListSrc, doHashCheck, nsPrecision)
                 # Remove any files/dirs from DEST not present in SRC
                 _doDelete(dst, dstDict, srcDict, backupArchiveFilenamePrefixDst)
                 logger.info("%s operation finished (%s): %d item(s)" % (operation, timestamp, n))
@@ -1100,7 +1135,7 @@ if __name__ == "__main__":
                             logger.warning("DST backup is not applicable for CLEAN operation. DST backup will not be performed.")
                         # Do SRC backup
                         if doBackupSrc:
-                            _doBackup(src, backupArchiveFilenamePrefixSrc, timestamp, storeRootFolderInBackupArchiveSrc, testBackupArchiveSrc)  
+                            _doBackup(src, backupArchiveFilenamePrefixSrc, timestamp, storeRootFolderInBackupArchiveSrc, testBackupArchiveSrc, nsPrecision)  
                         # Delete items from SRC
                         _doDelete(src, srcDict, defaultdict(list), backupArchiveFilenamePrefixSrc)
                         # Delete source directory
@@ -1122,7 +1157,7 @@ if __name__ == "__main__":
             logger.info('Program will now exit.')
             sys.exit(RETURN_EXIT__KEYBOARD_INT)
         except Exception as e:
-            logger.error("OPERATION: Operation failed.")
+            logger.error("Operation failed.")
             logger.error(str(e))
             if nRetries < maxRetries:
                 nRetries += 1

@@ -3,12 +3,12 @@ data-syncer
 ##Setup
 ### Windows
 The following has been tested on:
- * Windows 8.1 Pro 64-bit  
- * Python 3.4.2 64-bit  
- * pysmb 1.1.14  
+ * Windows 7 Ultimate SP1 64-bit  
+ * Python 3.4.3 64-bit  
+ * pysmb 1.1.16  
  * win_unc 0.6.1  
- * lxml 3.4.1  
- * psutil 2.2.1  
+ * lxml 3.4.4  
+ * psutil 3.2.1  
  * pywin32 Build 219  
  * cx_Freeze 4.3.4
 

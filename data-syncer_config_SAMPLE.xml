@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Configuration loggingMode="DUAL" logFilePath="">
-    <Folder cmd="a" cmd_long="upload_data" desc="Upload data from local path to network path." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1">
+    <Folder cmd="a" cmd_long="upload_data" desc="Upload data from local path to network path." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1" nsPrecision="false">
         <Source connectionMethod="LOCAL" path="C:/Data/" pathFilter="['.*']" fileFilter="['.*']">
             <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
             <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
@@ -12,7 +12,7 @@
             <UNC username="" password=""/>
         </Destination>
     </Folder>
-    <Folder cmd="b" cmd_long="download_data_all" desc="Download all data from network path to local path." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1">
+    <Folder cmd="b" cmd_long="download_data_all" desc="Download all data from network path to local path." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1" nsPrecision="false">
         <Source connectionMethod="LOCAL" path="\\server\Data\" pathFilter="['.*']" fileFilter="['.*']">
             <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
             <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
@@ -24,7 +24,7 @@
             <UNC username="" password=""/>
         </Destination>
     </Folder>
-    <Folder cmd="c" cmd_long="download_data_subfolder" desc="Download specific data folder from network path to local path." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1">
+    <Folder cmd="c" cmd_long="download_data_subfolder" desc="Download specific data folder from network path to local path." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1" nsPrecision="false">
         <Source connectionMethod="LOCAL" path="\\server\Data\" pathFilter="['//FolderName']" fileFilter="['.*']">
             <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
             <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
@@ -36,7 +36,7 @@
             <UNC username="" password=""/>
         </Destination>
     </Folder>
-    <Folder cmd="d" cmd_long="upload_data_unc" desc="Upload data from local path to network path (with UNC authentication)." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1">
+    <Folder cmd="d" cmd_long="upload_data_unc" desc="Upload data from local path to network path (with UNC authentication)." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1" nsPrecision="false">
         <Source connectionMethod="LOCAL" path="C:/Data/" pathFilter="['.*']" fileFilter="['.*']">
             <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
             <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
@@ -46,6 +46,18 @@
             <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
             <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
             <UNC username="server\Username" password="password"/>
+        </Destination>
+    </Folder>
+    <Folder cmd="e" cmd_long="local_copy" desc="Copy data between local paths." maxRetries="5" retryInterval="5" operation="COPY" doHashCheck="true" nAllowedEXEInstances="1" nsPrecision="false">
+        <Source connectionMethod="LOCAL" path="C:/Data1/" pathFilter="['.*']" fileFilter="['.*']">
+            <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
+            <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
+            <UNC username="" password=""/>
+        </Source>
+        <Destination connectionMethod="LOCAL" path="C:/Data2/" pathFilter="['.*']" fileFilter="['.*']">
+            <BackupArchive enable="true" filenamePrefix="SNAPSHOT" storeRootFolder="false" test="true"/>
+            <SMB username="" password="" serverName="" ipAddress="" port="" clientName="" shareName=""/>
+            <UNC username="" password=""/>
         </Destination>
     </Folder>
 </Configuration>

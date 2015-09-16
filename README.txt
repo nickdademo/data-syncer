@@ -51,6 +51,7 @@ doHashCheck:            Set to "true" to enable SHA256 file hash checks to valid
                         Set to "false" to disable.
                         NOTE: This feature is currently only available for LOCAL->LOCAL, LOCAL->UNC, UNC->LOCAL, UNC->UNC operations.
 nAllowedEXEInstances:   Set to "1" to allow only ONE instance of the executable to run at once. With this feature, the tool will return an exit code if the number of currently running processes exceeds the limit set.
+nsPrecision:            Set to "true" to use nanosecond precision when storing and comparing file modified timestamps. Otherwise set to "false" to use second precision.
 
 Source/Destination
 ------------------
